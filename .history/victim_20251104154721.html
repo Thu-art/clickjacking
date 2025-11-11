@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyBank - Chuyển Tiền</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .balance {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .balance-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        
+        .balance-amount {
+            font-size: 32px;
+            font-weight: bold;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn-transfer {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn-transfer:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .protection-status {
+            margin-top: 30px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .protection-status h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .protection-toggle {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .toggle-btn {
+            padding: 8px 15px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+        
+        .toggle-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .toggle-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🏦 MyBank</div>
+            <div class="subtitle">Chuyển tiền nhanh & an toàn</div>
+        </div>
+        
+        <div class="balance">
+            <div class="balance-label">Số dư khả dụng</div>
+            <div class="balance-amount">50,000,000 ₫</div>
+        </div>
+        
+        <form id="transferForm">
+            <div class="form-group">
+                <label for="recipient">Tài khoản người nhận</label>
+                <input type="text" id="recipient" placeholder="Nhập số tài khoản" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="amount">Số tiền chuyển</label>
+                <input type="number" id="amount" placeholder="Nhập số tiền" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="note">Nội dung chuyển khoản</label>
+                <input type="text" id="note" placeholder="Nhập nội dung" required>
+            </div>
+            
+            <button type="submit" class="btn-transfer">Xác Nhận Chuyển Tiền</button>
+        </form>
+        
+        <div id="message" class="message"></div>
+        
+        <div class="protection-status">
+            <h3>🛡️ Bảo Vệ Clickjacking</h3>
+            <div class="protection-toggle">
+                <button class="toggle-btn" onclick="toggleProtection('none')">Không bảo vệ</button>
+                <button class="toggle-btn" onclick="toggleProtection('xframe')">X-Frame-Options</button>
+                <button class="toggle-btn" onclick="toggleProtection('csp')">CSP frame-ancestors</button>
+                <button class="toggle-btn active" onclick="toggleProtection('framebuster')">Frame Buster JS</button>
+            </div>
+            <div id="protectionWarning" class="warning" style="display: none;">
+                ⚠️ Bảo vệ đang TẮT - Trang có thể bị nhúng vào iframe!
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentProtection = 'framebuster';
+        
+        function applyFrameBuster() {
+            if (window.top !== window.self) {
+                window.top.location = window.self.location;
+            }
+        }
+        
+        applyFrameBuster();
+        
+        function toggleProtection(type) {
+            currentProtection = type;
+            
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            const warning = document.getElementById('protectionWarning');
+            const message = document.getElementById('message');
+            
+            message.style.display = 'none';
+            
+            switch(type) {
+                case 'none':
+                    warning.style.display = 'block';
+                    warning.innerHTML = '⚠️ Bảo vệ đang TẮT - Trang có thể bị nhúng vào iframe!';
+                    message.style.display = 'block';
+                    message.className = 'message success';
+                    message.style.background = '#f8d7da';
+                    message.style.color = '#721c24';
+                    message.textContent = '⚠️ Lưu ý: Trong thực tế, bạn không thể tắt X-Frame-Options hoặc CSP từ client-side. Đây chỉ là demo mô phỏng!';
+                    break;
+                case 'xframe':
+                    warning.style.display = 'block';
+                    warning.innerHTML = '✅ X-Frame-Options: DENY được kích hoạt (mô phỏng)<br>Lưu ý: Header này phải được cấu hình trên server!';
+                    applyFrameBuster();
+                    break;
+                case 'csp':
+                    warning.style.display = 'block';
+                    warning.innerHTML = '✅ CSP frame-ancestors được kích hoạt (mô phỏng)<br>Lưu ý: Header này phải được cấu hình trên server!';
+                    applyFrameBuster();
+                    break;
+                case 'framebuster':
+                    warning.style.display = 'block';
+                    warning.innerHTML = '✅ Frame Buster JavaScript đang hoạt động - Tự động thoát khỏi iframe';
+                    applyFrameBuster();
+                    break;
+            }
+        }
+        
+        document.getElementById('transferForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const recipient = document.getElementById('recipient').value;
+            const amount = document.getElementById('amount').value;
+            const note = document.getElementById('note').value;
+            
+            const message = document.getElementById('message');
+            message.style.display = 'block';
+            message.className = 'message success';
+            message.innerHTML = `
+                ✅ Chuyển khoản thành công!<br>
+                <strong>Người nhận:</strong> ${recipient}<br>
+                <strong>Số tiền:</strong> ${new Intl.NumberFormat('vi-VN').format(amount)} ₫<br>
+                <strong>Nội dung:</strong> ${note}
+            `;
+            
+            setTimeout(() => {
+                document.getElementById('transferForm').reset();
+                message.style.display = 'none';
+            }, 5000);
+        });
+        
+        setInterval(() => {
+            if (window.top !== window.self && currentProtection === 'framebuster') {
+                applyFrameBuster();
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
+```
+
+4. **Save file** (`Ctrl + S`)
+
+---
+
+### Bước 3: Refresh Browser
+
+Nhấn **F5** hoặc **Ctrl + R** để refresh trang
+
+---
+
+## 🔍 KIỂM TRA FILE TRONG VS CODE
+
+Đảm bảo trong Explorer thấy:
+```
+CLICKJACKING-DEMO
+├── attacker.html    ✅
+├── index.html       ✅
+├── victim.html      ✅ (Phải có file này!)
+├── server.js        ✅
+├── package.json     ✅
+└── README.md        ✅
+```
+
+---
+
+## 🎯 KẾT QUẢ MONG ĐỢI
+
+Sau khi làm xong, refresh `http://localhost:3000/victim.html`, bạn sẽ thấy:
+```
+┌────────────────────────────┐
+│      🏦 MyBank             │
+│  Chuyển tiền nhanh & an toàn│
+│                            │
+│  Số dư khả dụng            │
+│   50,000,000 ₫             │
+│                            │
+│  [Form chuyển tiền]        │
+│  [Xác Nhận Chuyển Tiền]    │
+│                            │
+│  🛡️ Bảo Vệ Clickjacking    │
+└────────────────────────────┘

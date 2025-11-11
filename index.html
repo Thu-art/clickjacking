@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Clickjacking - Trang Chủ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 50px;
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 36px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 18px;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            color: #856404;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .warning strong {
+            color: #d32f2f;
+            font-size: 20px;
+        }
+        
+        .menu {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .menu-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-decoration: none;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        
+        .menu-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+        
+        .menu-item.danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+        }
+        
+        .menu-item.danger:hover {
+            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.4);
+        }
+        
+        .menu-item h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .menu-item p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .instructions {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .instructions h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ Demo Clickjacking Attack</h1>
+        <p class="subtitle">Bảo Vệ Web với CSP & X-Frame-Options</p>
+        
+        <div class="warning">
+            <strong>⚠️ CẢNH BÁO</strong><br>
+            Đây là dự án GIÁO DỤC để hiểu về Clickjacking.<br>
+            KHÔNG sử dụng vào mục đích tấn công thực tế!
+        </div>
+        
+        <div class="menu">
+            <a href="victim.html" class="menu-item" target="_blank">
+                <div class="icon">🏦</div>
+                <h2>Trang Victim</h2>
+                <p>Trang ngân hàng giả lập (nạn nhân)</p>
+            </a>
+            
+            <a href="attacker.html" class="menu-item danger" target="_blank">
+                <div class="icon">🎯</div>
+                <h2>Trang Attacker</h2>
+                <p>Trang tấn công clickjacking</p>
+            </a>
+        </div>
+        
+        <div class="instructions">
+            <h3>📋 Hướng Dẫn Sử Dụng Demo</h3>
+            <ol>
+                <li><strong>Mở Trang Victim:</strong> Xem trang ngân hàng bình thường</li>
+                <li><strong>Thử nghiệm bảo vệ:</strong> Click các nút bảo vệ khác nhau để hiểu cơ chế</li>
+                <li><strong>Mở Trang Attacker:</strong> Xem trang giả mạo "Quay số trúng thưởng"</li>
+                <li><strong>Kích hoạt tấn công:</strong> Click nút "KÍCH HOẠT TẤN CÔNG"</li>
+                <li><strong>Điều chỉnh:</strong> Dùng các slider để:
+                    <ul>
+                        <li>Tăng opacity để thấy iframe</li>
+                        <li>Điều chỉnh scale và position</li>
+                        <li>Căn chỉnh nút "Chuyển tiền" trùng "Nhận thưởng"</li>
+                    </ul>
+                </li>
+                <li><strong>Test bảo vệ:</strong> Giảm opacity về 0% và quan sát:
+                    <ul>
+                        <li>Nếu có bảo vệ → iframe bị chặn hoặc redirect</li>
+                        <li>Nếu không → tấn công thành công</li>
+                    </ul>
+                </li>
+            </ol>
+            
+            <h3 style="margin-top: 20px;">🔍 Các Cơ Chế Bảo Vệ</h3>
+            <ul style="margin-left: 20px; line-height: 1.8;">
+                <li><strong>X-Frame-Options: DENY</strong> - Chặn hoàn toàn iframe</li>
+                <li><strong>CSP frame-ancestors 'none'</strong> - Chuẩn hiện đại, mạnh hơn</li>
+                <li><strong>Frame Buster JS</strong> - JavaScript phát hiện và thoát iframe</li>
+            </ul>
+        </div>
+        
+        <div class="footer">
+            <p>📚 Demo được tạo cho mục đích giáo dục</p>
+            <p>Tìm hiểu thêm về bảo mật web tại <a href="https://owasp.org" target="_blank">OWASP.org</a></p>
+        </div>
+    </div>
+</body>
+</html>
