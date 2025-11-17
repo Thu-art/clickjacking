@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none';">
-
     <title>MyBank - Chuyển Tiền</title>
     <style>
-        /* CSS giữ nguyên, đảm bảo giao diện đẹp */
+        /* CSS giữ nguyên */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
         .container { background: white; border-radius: 15px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); padding: 40px; max-width: 500px; width: 100%; }
@@ -31,7 +29,7 @@
         .toggle-btn { padding: 8px 15px; border: 2px solid #667eea; background: white; color: #667eea; border-radius: 5px; cursor: pointer; font-size: 12px; transition: all 0.3s; }
         .toggle-btn.active { background: #667eea; color: white; }
         .toggle-btn:hover { background: #667eea; color: white; }
-        .warning { padding: 10px; border-radius: 5px; margin-top: 10px; font-size: 12px; display: none; }
+        .warning { background: #f8f9fa; border: 1px solid #dee2e6; color: #343a40; padding: 10px; border-radius: 5px; margin-top: 10px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -73,49 +71,74 @@
                 <button class="toggle-btn" onclick="toggleProtection('none')">Không bảo vệ</button>
                 <button class="toggle-btn" onclick="toggleProtection('xframe')">X-Frame-Options</button>
                 <button class="toggle-btn" onclick="toggleProtection('csp')">CSP frame-ancestors</button>
-                <button class="toggle-btn" onclick="toggleProtection('framebuster')">Frame Buster JS (Demo)</button>
+                <button class="toggle-btn" onclick="toggleProtection('framebuster')">Frame Buster JS</button>
             </div>
-            <div id="protectionWarning" class="warning">
-                </div>
+            <div id="protectionWarning" class="warning" style="display: block;">
+                Thông tin bảo vệ sẽ được hiển thị khi chọn. Vui lòng **Tải lại trang** sau khi thay đổi chế độ.
+            </div>
         </div>
     </div>
     
-    <!-- <script>
-        // --- 1. Hàm Chuyển đổi Bảo vệ (Tải lại trang) ---
+    <script>
+        let currentProtection = 'none';
+        
+        // --- 1. Lấy chế độ bảo vệ từ URL ---
+        const urlParams = new URLSearchParams(window.location.search);
+        // Đảm bảo lấy tham số `protection`
+        const serverProtectionMode = urlParams.get('protection'); 
+
+        if (serverProtectionMode) {
+            currentProtection = serverProtectionMode;
+        }
+
+        // --- 2. Hàm Frame Buster (Đã sửa lỗi cú pháp & logic) ---
+        function applyFrameBuster() {
+            // Frame Buster: Cố gắng thoát khỏi iframe
+            if (currentProtection === 'framebuster' && window.top !== window.self) {
+                // Thử ghi đè vị trí. Có thể bị chặn bởi iframe sandbox
+                try {
+                    window.top.location.replace(window.self.location.href);
+                    console.log("Frame Buster: Successfully broke out.");
+                } catch(e) {
+                    console.log("Frame Buster: Failed to break out (likely blocked by iframe sandbox).", e);
+                }
+            }
+        }
+        
+        // --- 3. Kích hoạt Frame Buster (nếu cần) ---
+        if (currentProtection === 'framebuster') {
+            applyFrameBuster();
+        }
+        
+        // --- 4. Hàm Chuyển đổi Bảo vệ (Tải lại trang) ---
         function toggleProtection(type) {
             if (event) event.preventDefault();
-            
-            if (type === 'framebuster') {
-                alert('Chế độ Frame Buster JS chỉ là Demo. Để kiểm tra X-Frame-Options/CSP, vui lòng chọn 2 nút còn lại.');
-                // Tải lại trang với chế độ mặc định (để hiển thị trạng thái)
-                window.location.href = window.location.pathname + '?protection=framebuster';
-                return;
-            }
             
             // Chuyển hướng trình duyệt để yêu cầu Server gửi Header mới
             const newUrl = window.location.pathname + '?protection=' + type;
             window.location.href = newUrl;
         }
 
-        // --- 2. Xử lý DOMContentLoaded (Đánh dấu nút active & Hiển thị thông báo) ---
+        // --- 5. Xử lý DOMContentLoaded (Đánh dấu nút active & Hiển thị thông báo) ---
         document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const currentProtection = urlParams.get('protection') || 'all'; 
             const warning = document.getElementById('protectionWarning');
             const toggleBtns = document.querySelectorAll('.toggle-btn');
             
             // Đánh dấu nút đang active
             toggleBtns.forEach(btn => {
                 btn.classList.remove('active');
-                const btnType = btn.textContent.toLowerCase().includes(currentProtection.toLowerCase());
+                const btnText = btn.textContent.toLowerCase().trim();
+                const current = currentProtection.toLowerCase();
                 
-                if (btnType || (currentProtection === 'all' && btn.textContent.includes('Frame Buster JS'))) {
+                if (btnText.includes(current) || 
+                    (current === 'xframe' && btnText.includes('x-frame-options')) ||
+                    (current === 'csp' && btnText.includes('csp frame-ancestors')) ||
+                    (current === 'none' && btnText.includes('không bảo vệ'))) {
                     btn.classList.add('active');
                 }
             });
             
             // Hiển thị thông báo bảo vệ
-            warning.style.display = 'block';
             switch(currentProtection) {
                 case 'none':
                     warning.style.backgroundColor = '#f8d7da';
@@ -136,16 +159,15 @@
                     warning.innerHTML = '✅ **CSP frame-ancestors: none** đang hoạt động (Header Server). **Tấn công sẽ bị chặn** bởi trình duyệt.';
                     break;
                 case 'framebuster':
-                case 'all': // Giả định 'all' hoặc 'framebuster' là chế độ mặc định/demo
                     warning.style.backgroundColor = '#fff3cd';
                     warning.style.color = '#856404';
                     warning.style.border = '1px solid #ffc107';
-                    warning.innerHTML = '⚠️ **Frame Buster JS (Demo)** đang được chọn. Header bảo vệ sẽ được gửi nếu chọn XFO/CSP.';
+                    warning.innerHTML = '⚠️ **Frame Buster JS** đang hoạt động. Kẻ tấn công có thể sử dụng thuộc tính **sandbox** để chặn cơ chế này!';
                     break;
             }
         });
         
-        // --- 3. Gửi dữ liệu form (Giữ nguyên) ---
+        // --- 6. Gửi dữ liệu form (Giữ nguyên) ---
         document.getElementById('transferForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -156,9 +178,6 @@
             const message = document.getElementById('message');
             message.style.display = 'block';
             message.className = 'message success';
-            // Gọi API chuyển tiền giả định ở đây nếu cần, nhưng chỉ log cho demo
-            console.log(`[DEMO] Transferring ${amount} to ${recipient} with note: ${note}`);
-            
             message.innerHTML = `
                 ✅ Chuyển khoản thành công!<br>
                 <strong>Người nhận:</strong> ${recipient}<br>
@@ -172,37 +191,12 @@
             }, 5000);
         });
         
-        // Lưu ý: Tất cả logic Frame Buster JS và setInterval đã được loại bỏ.
-    </script> -->
-    <script>
-    function toggleProtection(type) {
-        // Điều hướng lại lên server để server gửi đúng header
-        window.location.href = window.location.pathname + "?protection=" + type;
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-        const params = new URLSearchParams(window.location.search);
-        const mode = params.get("protection") || "none";
-        const warning = document.getElementById("protectionWarning");
-
-        warning.style.display = "block";
-
-        switch (mode) {
-            case "none":
-                warning.innerHTML = "⚠️ KHÔNG BẢO VỆ - attacker có thể iframe trang này.";
-                warning.style.background = "#f8d7da";
-                break;
-            case "xframe":
-                warning.innerHTML = "🟢 X-Frame-Options: DENY đang hoạt động.";
-                warning.style.background = "#d4edda";
-                break;
-            case "csp":
-                warning.innerHTML = "🟢 CSP frame-ancestors 'none' đang hoạt động.";
-                warning.style.background = "#d4edda";
-                break;
-        }
-    });
-</script>
-
+        // --- 7. Interval cho Frame Buster (Chỉ kiểm tra khi chế độ là framebuster) ---
+        setInterval(() => {
+            if (window.top !== window.self && currentProtection === 'framebuster') {
+                applyFrameBuster();
+            }
+        }, 1000);
+    </script>
 </body>
 </html>

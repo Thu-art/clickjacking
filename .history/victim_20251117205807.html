@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Victim Page</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+        button {
+            padding: 10px 14px;
+            margin: 6px;
+            cursor: pointer;
+            border: none;
+            background: #cfcfcf;
+            border-radius: 6px;
+        }
+        button.active {
+            background: #4CAF50;
+            color: white;
+        }
+        #status-box {
+            padding: 10px;
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            margin-top: 20px;
+            border-radius: 6px;
+        }
+    </style>
+
+    <script>
+        // 🔥 Hàm thêm CSP hoặc XFO thật SỚM NHẤT
+        (function applyRealProtection() {
+            const params = new URLSearchParams(location.search);
+            const protection = params.get("protection");
+
+            if (protection === "csp") {
+                const meta = document.createElement("meta");
+                meta.httpEquiv = "Content-Security-Policy";
+                meta.content = "frame-ancestors 'none'";
+                document.head.appendChild(meta);
+                console.log("CSP frame-ancestors 'none' ACTIVATED");
+            }
+
+            if (protection === "xfo") {
+                const meta = document.createElement("meta");
+                meta.httpEquiv = "X-Frame-Options";
+                meta.content = "DENY";
+                document.head.appendChild(meta);
+                console.log("X-Frame-Options DENY ACTIVATED");
+            }
+        })();
+    </script>
+
+</head>
+
+<body>
+    <h1>Victim Page</h1>
+    <p>Trang này để demo clickjacking và bật tắt bảo vệ.</p>
+
+    <h3>Chọn chế độ bảo vệ:</h3>
+    <button id="noneBtn">Không bảo vệ</button>
+    <button id="cspBtn">CSP frame-ancestors</button>
+    <button id="xfoBtn">X-Frame-Options</button>
+
+    <div id="status-box">Chưa bật chế độ bảo vệ nào.</div>
+
+    <script>
+        // Gán nút
+        const noneBtn = document.getElementById("noneBtn");
+        const cspBtn = document.getElementById("cspBtn");
+        const xfoBtn = document.getElementById("xfoBtn");
+        const statusBox = document.getElementById("status-box");
+
+        function setActive(btn) {
+            [noneBtn, cspBtn, xfoBtn].forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+        }
+
+        function updateUI() {
+            const params = new URLSearchParams(location.search);
+            const mode = params.get("protection");
+
+            if (mode === "csp") {
+                setActive(cspBtn);
+                statusBox.innerHTML = "CSP <b>frame-ancestors 'none'</b> đang hoạt động (REAL PROTECTION)";
+            } else if (mode === "xfo") {
+                setActive(xfoBtn);
+                statusBox.innerHTML = "X-Frame-Options <b>DENY</b> đang hoạt động (REAL PROTECTION)";
+            } else {
+                setActive(noneBtn);
+                statusBox.innerHTML = "Không có bảo vệ (trang này có thể bị clickjacking)";
+            }
+        }
+
+        noneBtn.onclick = () => { location.href = "?protection=none"; };
+        cspBtn.onclick = () => { location.href = "?protection=csp"; };
+        xfoBtn.onclick = () => { location.href = "?protection=xfo"; };
+
+        updateUI();
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Victim Bank Page</title>
+
+    <!-- Bật CHẶN CLICKJACKING mạnh nhất -->
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none';">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fafafa;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+        }
+
+        .title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 5px;
+            border: none;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #005fcc;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="title">💳 Victim Banking Page (Protected)</div>
+
+        <p>Trang này đã bật chống clickjacking:</p>
+        <ul>
+            <li><b>X‑Frame‑Options: DENY</b></li>
+            <li><b>CSP: frame-ancestors 'none'</b></li>
+        </ul>
+
+        <p>Không website nào có thể iframe trang này.</p>
+
+        <label>Số tài khoản</label>
+        <input type="text" value="1234 5678 9999">
+
+        <label>Số tiền</label>
+        <input type="number" value="5000000">
+
+        <button class="btn">Xác nhận chuyển tiền</button>
+    </div>
+
+</body>
+</html>

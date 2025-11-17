@@ -3,8 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none';">
-
     <title>MyBank - Chuyển Tiền</title>
     <style>
         /* CSS giữ nguyên, đảm bảo giao diện đẹp */
@@ -80,7 +78,7 @@
         </div>
     </div>
     
-    <!-- <script>
+    <script>
         // --- 1. Hàm Chuyển đổi Bảo vệ (Tải lại trang) ---
         function toggleProtection(type) {
             if (event) event.preventDefault();
@@ -173,36 +171,6 @@
         });
         
         // Lưu ý: Tất cả logic Frame Buster JS và setInterval đã được loại bỏ.
-    </script> -->
-    <script>
-    function toggleProtection(type) {
-        // Điều hướng lại lên server để server gửi đúng header
-        window.location.href = window.location.pathname + "?protection=" + type;
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-        const params = new URLSearchParams(window.location.search);
-        const mode = params.get("protection") || "none";
-        const warning = document.getElementById("protectionWarning");
-
-        warning.style.display = "block";
-
-        switch (mode) {
-            case "none":
-                warning.innerHTML = "⚠️ KHÔNG BẢO VỆ - attacker có thể iframe trang này.";
-                warning.style.background = "#f8d7da";
-                break;
-            case "xframe":
-                warning.innerHTML = "🟢 X-Frame-Options: DENY đang hoạt động.";
-                warning.style.background = "#d4edda";
-                break;
-            case "csp":
-                warning.innerHTML = "🟢 CSP frame-ancestors 'none' đang hoạt động.";
-                warning.style.background = "#d4edda";
-                break;
-        }
-    });
-</script>
-
+    </script>
 </body>
 </html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>🎁 QUAY SỐ TRÚNG THƯỞNG - 100 TRIỆU ĐỒNG</title>
+    <style>
+        /* CSS giữ nguyên, chỉ thêm padding-top để nút không sát cạnh */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%); min-height: 100vh; overflow: hidden; padding-top: 50px; /* Thêm padding cho dễ căn chỉnh */ } 
+        .attacker-page { position: relative; width: 100%; height: 100vh; display: flex; flex-direction: column; justify-content: flex-start; /* Thay đổi để căn chỉnh tốt hơn */ align-items: center; z-index: 1; } 
+        .title { font-size: 48px; font-weight: bold; color: white; text-shadow: 3px 3px 6px rgba(0,0,0,0.3); margin-bottom: 20px; animation: pulse 2s infinite; text-align: center; } 
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } } 
+        .subtitle { font-size: 24px; color: white; margin-bottom: 40px; text-align: center; } 
+        .prize-box { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center; position: relative; z-index: 2; } 
+        .prize-amount { font-size: 64px; font-weight: bold; color: #ff6b6b; margin-bottom: 20px; } 
+        .prize-text { font-size: 20px; color: #666; margin-bottom: 30px; } 
+        .spin-button { padding: 20px 60px; font-size: 24px; font-weight: bold; background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%); color: white; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4); transition: all 0.3s; position: relative; z-index: 3; } 
+        .spin-button:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(255, 107, 107, 0.6); } 
+        .spin-button:active { transform: translateY(0); } 
+        
+        /* IFRAME OVERLAY - Đã sửa */
+        .iframe-overlay {
+            position: fixed;
+            top: 50%; /* Bắt đầu căn giữa trang */
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            opacity: 0.0; /* Trong suốt hoàn toàn */
+            z-index: 9999; /* Nằm trên cùng */
+            pointer-events: auto;
+            display: none; /* Ẩn mặc định */
+            transform: translate(-50%, -50%); /* Dịch chuyển để căn giữa */
+        }
+        
+        .iframe-overlay.active {
+            display: block;
+        }
+        
+        .victim-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            /* Scale và Position sẽ được điều chỉnh bằng JS */
+            transform: scale(1.2) translateY(0px); 
+            transform-origin: center center;
+        }
+        
+        /* Controls và Warning banner giữ nguyên */
+        .controls { position: fixed; top: 20px; right: 20px; background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px; color: white; z-index: 10000; } 
+        .controls h3 { margin-bottom: 15px; color: #feca57; } 
+        .control-btn { display: block; width: 100%; padding: 10px; margin: 5px 0; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; } 
+        .control-btn:hover { background: #764ba2; } 
+        .control-btn.danger { background: #e74c3c; } 
+        .control-btn.danger:hover { background: #c0392b; } 
+        .slider-group { margin: 10px 0; } 
+        .slider-group label { display: block; margin-bottom: 5px; font-size: 12px; } 
+        .slider-group input { width: 100%; } 
+        .info-box { background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 5px; margin-top: 15px; font-size: 12px; border: 1px solid rgba(255, 255, 255, 0.2); } 
+        .warning-banner { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(231, 76, 60, 0.95); color: white; padding: 15px 30px; border-radius: 10px; font-weight: bold; z-index: 10001; box-shadow: 0 5px 20px rgba(0,0,0,0.3); } 
+        .confetti { position: fixed; width: 10px; height: 10px; background: #feca57; animation: fall 3s linear infinite; } 
+        @keyframes fall { to { transform: translateY(100vh) rotate(360deg); } } 
+    </style>
+</head>
+<body>
+    <div class="attacker-page">
+        <h1 class="title">🎁 CHÚC MỪNG! 🎁</h1>
+        <p class="subtitle">Bạn đã trúng thưởng chương trình khuyến mãi đặc biệt!</p>
+        
+        <div class="prize-box">
+            <div class="prize-amount">100,000,000₫</div>
+            <p class="prize-text">Nhấn nút bên dưới để nhận thưởng ngay!</p>
+            <button class="spin-button" id="claimButton">🎉 NHẬN THƯỞNG NGAY 🎉</button>
+        </div>
+    </div>
+    
+    <div class="iframe-overlay" id="iframeOverlay">
+        <iframe 
+            id="victimFrame"
+            class="victim-iframe"
+            src=""
+            sandbox="allow-same-origin allow-scripts allow-forms" 
+            title="Hidden Frame">    
+        </iframe>
+    </div>
+    
+    <div class="controls">
+        <h3>⚙️ Điều khiển Demo</h3>
+        
+        <button class="control-btn danger" onclick="activateAttack()">
+            🎯 KÍCH HOẠT TẤN CÔNG
+        </button>
+        
+        <button class="control-btn" onclick="deactivateAttack()">
+            🛑 TẮT TẤN CÔNG
+        </button>
+        
+        <div class="slider-group">
+            <label for="protectionInput">Chế độ bảo vệ Victim (none, xframe, csp, framebuster, sameorigin):</label>
+            <input type="text" id="protectionInput" value="none" placeholder="none, csp, xframe...">
+        </div>
+        <div class="slider-group">
+            <label>Độ trong suốt iframe: <span id="opacityValue">0%</span></label>
+            <input type="range" min="0" max="100" value="0" id="opacitySlider" oninput="adjustOpacity(this.value)">
+        </div>
+        
+        <div class="slider-group">
+            <label>Scale iframe: <span id="scaleValue">1.2x</span></label>
+            <input type="range" min="50" max="200" value="120" id="scaleSlider" oninput="adjustScale(this.value)">
+        </div>
+        
+        <div class="slider-group">
+            <label>Vị trí Y: <span id="posYValue">0px</span></label>
+            <input type="range" min="-500" max="500" value="0" id="posYSlider" oninput="adjustPosition(this.value)">
+        </div>
+        
+        <div class="info-box">
+            <strong>📌 Hướng dẫn:</strong><br>
+            1. Đặt chế độ bảo vệ muốn kiểm tra (ví dụ: **csp**).<br>
+            2. Nhấn "Kích hoạt tấn công".<br>
+            3. Nếu bị chặn, bạn sẽ thấy lỗi trong Console. Nếu không bị chặn, căn chỉnh và giảm opacity về 0% để thử click.
+        </div>
+    </div>
+    
+    <div class="warning-banner">
+        ⚠️ ĐÂY LÀ DEMO GIÁO DỤC - KHÔNG SỬ DỤNG VÀO MỤC ĐÍCH XẤU
+    </div>
+    
+    <script>
+        let attackActive = false;
+        
+        function activateAttack() {
+            attackActive = true;
+            const overlay = document.getElementById('iframeOverlay');
+            const iframe = document.getElementById('victimFrame');
+            
+            // Lấy chế độ bảo vệ từ ô input
+            const protectionMode = document.getElementById('protectionInput').value.toLowerCase() || 'none';
+            
+            // Đặt lại src để yêu cầu server gửi header mới
+            iframe.src = `/victim.html?protection=${protectionMode}`; 
+
+            overlay.classList.add('active');
+            
+            alert('⚠️ TẤN CÔNG ĐÃ KÍCH HOẠT!\n' +
+                  `Đang tải Victim với chế độ: ${protectionMode.toUpperCase()}\n\n` +
+                  'Kiểm tra Console để xem trình duyệt có chặn iframe bằng Header không.');
+        }
+        
+        function deactivateAttack() {
+            attackActive = false;
+            const overlay = document.getElementById('iframeOverlay');
+            overlay.classList.remove('active');
+            document.getElementById('opacitySlider').value = 0;
+            document.getElementById('opacityValue').textContent = '0%';
+        }
+        
+        function adjustOpacity(value) {
+            const overlay = document.getElementById('iframeOverlay');
+            overlay.style.opacity = value / 100;
+            document.getElementById('opacityValue').textContent = value + '%';
+        }
+        
+        function adjustScale(value) {
+            const iframe = document.getElementById('victimFrame');
+            // Lấy vị trí Y hiện tại để không ghi đè
+            const currentTransform = iframe.style.transform;
+            const posY = currentTransform.match(/translateY\(([^)]+)\)/)?.[1] || '0px'; 
+            
+            iframe.style.transform = `scale(${value / 100}) translateY(${posY})`;
+            document.getElementById('scaleValue').textContent = (value / 100).toFixed(2) + 'x';
+        }
+        
+        function adjustPosition(value) {
+            const iframe = document.getElementById('victimFrame');
+            // Lấy scale hiện tại
+            const currentTransform = iframe.style.transform;
+            const scale = currentTransform.match(/scale\(([\d.]+)\)/)?.[1] || 1.2;
+            
+            iframe.style.transform = `scale(${scale}) translateY(${value}px)`;
+            document.getElementById('posYValue').textContent = value + 'px';
+        }
+        
+        // Hiệu ứng confetti và các hàm khác (Giữ nguyên)
+        function createConfetti() {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + '%';
+            confetti.style.background = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3'][Math.floor(Math.random() * 4)];
+            confetti.style.animationDelay = Math.random() * 3 + 's';
+            document.body.appendChild(confetti);
+            
+            setTimeout(() => confetti.remove(), 3000);
+        }
+        
+        setInterval(createConfetti, 300);
+        
+        document.getElementById('claimButton').addEventListener('click', function() {
+            if (!attackActive) {
+                alert('🎉 Cảm ơn bạn đã tham gia!\n\nĐây chỉ là trang demo giáo dục về Clickjacking.');
+            }
+            // Nếu attackActive=true, click sẽ trượt vào iframe ẩn.
+        });
+        
+        document.getElementById('victimFrame').addEventListener('load', function() {
+            console.log('Iframe finished attempting to load. Check console for "Refused to display..." error if protection is ON.');
+        });
+    </script>
+</body>
+</html>

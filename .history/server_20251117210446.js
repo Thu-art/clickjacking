@@ -1,100 +1,129 @@
 const express = require('express');
 const path = require('path');
 const app = express();
-const PORT = 4000;
+const PORT = 3000;
 
-// =======================================================
-// ❗❗ DI CHUYỂN static xuống sau ROUTE victim.html
-//    Nếu đặt ở đây → nó OVERRIDE route và phá CSP!
-// =======================================================
+// Middleware để serve static files
+// ✅ Chỉ serve file tĩnh trong thư mục hiện tại nhưng bỏ favicon để tránh 404
+app.use(express.static(__dirname, { extensions: ['html'] }));
 
-// Route favicon
+app.get("/victim.html", (req, res) => {
+    const mode = req.query.protection;
+
+    if (mode === "xframe") {
+        res.setHeader("X-Frame-Options", "DENY");
+    }
+
+    if (mode === "csp") {
+        res.setHeader("Content-Security-Policy", "frame-ancestors 'none'");
+    }
+
+    res.sendFile(__dirname + "/victim.html");
+});
+
+
+// ✅ Thêm route favicon tránh lỗi 404 vô nghĩa
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ============================================
-// TRANG CHỦ
+// TRANG CHỦ - Không có bảo vệ đặc biệt
 // ============================================
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // ============================================
-// TRANG VICTIM - BẮT BUỘC đặt TRƯỚC static
+// TRANG VICTIM - CÓ BẢO VỆ (Mặc định)
 // ============================================
 app.get('/victim.html', (req, res) => {
+    // Lấy tham số protection từ query string
     const protection = req.query.protection || 'all';
-
-    switch (protection) {
+    
+    // Áp dụng bảo vệ dựa trên tham số
+    switch(protection) {
         case 'none':
-            console.log('⚠️ Victim page: NO PROTECTION');
+            // KHÔNG bảo vệ - cho phép iframe
+            console.log('⚠️  Victim page: NO PROTECTION');
             break;
-
+            
         case 'xframe':
+            // CHỈ X-Frame-Options
             res.setHeader('X-Frame-Options', 'DENY');
-            console.log('🛡️ Victim page: X-Frame-Options DENY');
+            console.log('🛡️  Victim page: X-Frame-Options DENY');
             break;
-
+            
         case 'csp':
+            // CHỈ CSP
             res.setHeader('Content-Security-Policy', "frame-ancestors 'none'");
-            console.log('🛡️ Victim page: CSP frame-ancestors none');
+            console.log('🛡️  Victim page: CSP frame-ancestors none');
             break;
-
+            
         case 'sameorigin':
+            // Cho phép cùng origin
             res.setHeader('X-Frame-Options', 'SAMEORIGIN');
             res.setHeader('Content-Security-Policy', "frame-ancestors 'self'");
-            console.log('🛡️ Victim page: SAMEORIGIN');
+            console.log('🛡️  Victim page: SAMEORIGIN protection');
             break;
-
+            
         case 'all':
         default:
+            // TẤT CẢ bảo vệ (Recommended)
             res.setHeader('X-Frame-Options', 'DENY');
             res.setHeader('Content-Security-Policy', "frame-ancestors 'none'");
-            console.log('🛡️ FULL PROTECTION (X-Frame + CSP)');
+            console.log('🛡️  Victim page: FULL PROTECTION (X-Frame + CSP)');
             break;
     }
-
+    
     res.sendFile(path.join(__dirname, 'victim.html'));
 });
 
 // ============================================
-// TRANG ATTACKER
+// TRANG ATTACKER - Không có bảo vệ
 // ============================================
 app.get('/attacker.html', (req, res) => {
+    // Attacker page KHÔNG có bảo vệ để có thể nhúng victim
     console.log('🎯 Attacker page loaded');
     res.sendFile(path.join(__dirname, 'attacker.html'));
 });
 
 // ============================================
-// API: Check headers
+// API: Kiểm tra headers của victim
 // ============================================
 app.get('/api/check-headers', (req, res) => {
     const protection = req.query.protection || 'all';
     const headers = {};
-
-    switch (protection) {
+    
+    switch(protection) {
         case 'none':
             headers.xFrameOptions = null;
             headers.csp = null;
+            headers.protected = false;
             break;
         case 'xframe':
             headers.xFrameOptions = 'DENY';
+            headers.csp = null;
+            headers.protected = true;
             break;
         case 'csp':
+            headers.xFrameOptions = null;
             headers.csp = "frame-ancestors 'none'";
+            headers.protected = true;
             break;
         case 'sameorigin':
             headers.xFrameOptions = 'SAMEORIGIN';
             headers.csp = "frame-ancestors 'self'";
+            headers.protected = true;
             break;
         case 'all':
         default:
             headers.xFrameOptions = 'DENY';
             headers.csp = "frame-ancestors 'none'";
+            headers.protected = true;
             break;
     }
-
+    
     res.json({
         protection,
         headers,
@@ -103,32 +132,35 @@ app.get('/api/check-headers', (req, res) => {
 });
 
 // ============================================
-// API: Transfer
+// API: Xử lý chuyển tiền (Demo)
 // ============================================
 app.post('/api/transfer', (req, res) => {
     const { recipient, amount, note } = req.body;
-
-    console.log('💰 Transfer Request:', { recipient, amount, note });
-
-    res.json({
-        success: true,
-        message: 'Chuyển khoản thành công!',
-        data: {
-            recipient,
-            amount,
-            note,
-            transactionId: 'TXN' + Date.now()
-        }
+    
+    console.log('💰 Transfer Request:', {
+        recipient,
+        amount,
+        note,
+        timestamp: new Date().toISOString()
     });
+    
+    // Giả lập xử lý chuyển tiền
+    setTimeout(() => {
+        res.json({
+            success: true,
+            message: 'Chuyển khoản thành công!',
+            data: {
+                recipient,
+                amount,
+                note,
+                transactionId: 'TXN' + Date.now()
+            }
+        });
+    }, 1000);
 });
 
 // ============================================
-// ❗❗ CUỐI CÙNG MỚI static — KHÔNG ĐƯỢC ĐỂ TRÊN!!!
-// ============================================
-app.use(express.static(__dirname, { extensions: ['html'] }));
-
-// ============================================
-// 404
+// Error handling
 // ============================================
 app.use((req, res) => {
     res.status(404).send(`
@@ -148,4 +180,14 @@ app.listen(PORT, () => {
     console.log(`🏦 Victim page:  http://localhost:${PORT}/victim.html`);
     console.log(`🎯 Attacker page: http://localhost:${PORT}/attacker.html`);
     console.log('='.repeat(50));
-});
+    console.log('');
+    console.log('📋 Available protection modes:');
+    console.log('   - /victim.html?protection=none       (No protection)');
+    console.log('   - /victim.html?protection=xframe     (X-Frame-Options only)');
+    console.log('   - /victim.html?protection=csp        (CSP only)');
+    console.log('   - /victim.html?protection=sameorigin (Same origin)');
+    console.log('   - /victim.html?protection=all        (Full protection - default)');
+    console.log('');
+    console.log('Press Ctrl+C to stop the server');
+    console.log('='.repeat(50));
+});  
