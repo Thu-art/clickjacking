@@ -9,6 +9,7 @@ clickjacking-demo/
 ├── package.json            # Dependencies
 ├── .gitignore              # Git ignore file
 └── README.md               # File này
+
 Hướng Dẫn Sử Dụng
  1. Mở Trang Chủ
 Truy cập: http://localhost:3000
@@ -40,3 +41,5 @@ Dùng Browser DevTools
 2. Refresh trang
 3. Click vào request đầu tiên
 4. Xem Response Headers
+
+   => Link youtube: https://youtu.be/osn4AGDUENI
